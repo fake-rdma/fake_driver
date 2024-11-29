@@ -3,3 +3,7 @@ deps/linux-6.11.8
 *.cmd
 *.ko
 *.json
+*.mod
+*.symvers
+*.order
+*.mod.*
