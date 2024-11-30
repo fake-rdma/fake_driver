@@ -1,3 +1,4 @@
+.cache/
 deps/linux-6.11.8
 *.o
 *.cmd

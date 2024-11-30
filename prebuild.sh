@@ -2,7 +2,7 @@
 
 KERNEL_VERSION=$(uname -r)
 
-if [ -d "/lib/modules/${KERNEL_VERSION}/build" ]; then
+if [ -d "/lib/modules/${KERNEL_VERSION}/build" ] && [ "$1" == "1" ]; then
   LOCAL_KERNEL="/lib/modules/${KERNEL_VERSION}/build"
   if [ ! -f "${LOCAL_KERNEL}/.config" ]; then
     sudo cp /boot/config-6.11.8-300.fc41.aarch64 ${LOCAL_KERNEL}/.config
@@ -32,6 +32,7 @@ else
   if [ ! -f ".config" ]; then
     echo "start to build kernel"
     sudo cp ../../.config .
+    sudo make -j4 > /dev/null
   else
     echo "already have RDMA config"
   fi
