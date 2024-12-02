@@ -42,3 +42,15 @@ else
 
   echo 0
 fi
+
+if [ ! -f /usr/src/kernels/$KERNEL_VERSION/certs/signing_key.pem ]; then
+
+  pushd /usr/src/kernels/$KERNEL_VERSION/certs
+
+  sudo openssl req -new -x509 -nodes -days 14 -subj "/CN=FRDMA module signing key" \
+      -newkey rsa:2048 -keyout signing_key.x509 \
+      -outform PEM -out signing_key.pem
+
+  popd
+
+fi

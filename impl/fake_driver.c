@@ -7,7 +7,6 @@
 #include "linux/pci.h"
 #include "linux/printk.h"
 #include "rdma/rdma_netlink.h"
-#include <cstring>
 #include <linux/dev_printk.h>
 #include <linux/module.h>
 #include <rdma/ib_verbs.h>
@@ -139,12 +138,14 @@ static struct pci_driver frdma_pci_driver = {
 static __init int frdma_init_module(void) {
 	int ret;
 
+	printk(KERN_WARNING "frdma init module\n");
 	ret = pci_register_driver(&frdma_pci_driver);
 
 	return ret;
 }
 
 static void __exit frdma_exit_module(void) {
+	printk(KERN_WARNING "frdma exit module\n");
 	pci_unregister_driver(&frdma_pci_driver);
 }
 
