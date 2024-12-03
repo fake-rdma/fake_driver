@@ -16,6 +16,7 @@
 #define FRDMA_BAR_MASK (BIT(FRDMA_FUNC_BAR) | BIT(FRDMA_MISX_BAR))
 
 struct frdma_devattr {
+    unsigned char peer_addr[ETH_ALEN];
     int numa_node;
 };
 

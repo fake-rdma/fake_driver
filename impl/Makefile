@@ -1,3 +1,11 @@
+KBUILD_CFLAGS := -g -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+	-fno-strict-aliasing -fno-common \
+	-Werror-implicit-function-declaration \
+	-Wno-format-security \
+	-fno-delete-null-pointer-checks -Wno-implicit-function-declaration \
+	-Wno-unused-but-set-variable \
+	-Wno-unused-local-typedefs
+	
 PWD := $(shell pwd)
 
 obj-m := fake_driver.o
