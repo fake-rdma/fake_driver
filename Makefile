@@ -1,12 +1,13 @@
 KERNEL_VERSION = $(shell uname -r)
 
 LOCAL_KERNEL ?= /lib/modules/${KERNEL_VERSION}/build
+OS_NAME = $(shell . /etc/os-release && echo $$ID)
 
 all:
 	@echo "Using kernel directory: ${LOCAL_KERNEL}"
-ifeq ($(OS), ubuntu)
+ifeq ($(OS_NAME), ubuntu)
 	@bear $(MAKE) -C impl DEPS_LINUX=$(LOCAL_KERNEL)
-else ifeq ($(OS), fedora)
+else ifeq ($(OS_NAME), fedora)
 	@bear -- $(MAKE) -C impl DEPS_LINUX=$(LOCAL_KERNEL)
 endif
 	@sed -i '/-mabi=lp64/d' compile_commands.json
