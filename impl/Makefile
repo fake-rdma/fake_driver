@@ -8,6 +8,7 @@ KBUILD_CFLAGS := -g -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 	
 PWD := $(shell pwd)
 KERNEL_VERSION := $(shell uname -r)
+MODULE_TARGET := /lib/modules/$(KERNEL_VERSION)/kernel/drivers/infiniband/hw/frdma
 
 obj-m := fake_driver.o
 
@@ -15,10 +16,11 @@ fake_driver-y := frdma_verb_ops.o
 
 all:
 	$(MAKE) -C $(DEPS_LINUX) M=$(PWD) modules
-	sudo mkdir -p /lib/modules/$(KERNEL_VERSION)/kernel/drivers/infiniband/hw/frdma
-	sudo cp fake_driver.ko /lib/modules/$(KERNEL_VERSION)/kernel/drivers/infiniband/hw/frdma
+	sudo $(DEPS_LINUX)/scripts/sign-file sha512 $(DEPS_LINUX)/certs/signing_key.x509 $(DEPS_LINUX)/certs/signing_key.pem fake_driver.ko
+	sudo mkdir -p $(MODULE_TARGET)
+	sudo ln -s $(PWD)/fake_driver.ko $(MODULE_TARGET)
 	sudo depmod
 
 clean:
 	$(MAKE) -C $(DEPS_LINUX) M=$(PWD) clean
-	sudo rm -rf /lib/modules/$(KERNEL_VERSION)/kernel/drivers/infiniband/hw/frdma
+	sudo rm -rf $(MODULE_TARGET)
