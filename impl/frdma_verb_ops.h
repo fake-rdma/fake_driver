@@ -1,7 +1,6 @@
 #ifndef __FAKE_DRIVER_VERBS_OPERATIONS_H__
 #define __FAKE_DRIVER_VERBS_OPERATIONS_H__
 
-#include "asm-generic/int-ll64.h"
 #include "rdma/ib_verbs.h"
 
 struct rdma_hw_stats* frdma_alloc_hw_port_stats( struct ib_device* device,
