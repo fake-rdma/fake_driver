@@ -190,8 +190,9 @@ struct frdma_dev {
   struct ib_device   ibdev;
   struct net_device* netdev;
 
-  struct frdma_devattr attrs;
-  struct frdma_port    port;
+  // struct frdma_devattr attrs;
+  struct ib_device_attr attrs;
+  struct frdma_port     port;
 
   struct list_head cep_list;
 };

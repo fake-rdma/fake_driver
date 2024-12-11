@@ -1,9 +1,9 @@
 #include "linux/init.h"
 #include "linux/kern_levels.h"
+#include "linux/kmod.h"
 #include "linux/printk.h"
 #include <linux/module.h>
 
-#include "rdma/rdma_netlink.h"
 #include <rdma/ib_verbs.h>
 
 #include "fake_driver.h"
@@ -11,14 +11,6 @@
 
 MODULE_AUTHOR( "Chen Miao <chenmiao.ku@gmail.com>" );
 MODULE_LICENSE( "Dual BSD/GPL" );
-
-static int frdma_query_gid( struct ib_device* dev,
-                            u32               port,
-                            int               idx,
-                            union ib_gid*     gid ) {
-
-  return 0;
-}
 
 static inline struct frdma_dev* to_fdev( struct ib_device* ibdev ) {
   return container_of( ibdev, struct frdma_dev, ibdev );
@@ -99,8 +91,8 @@ static int frdma_query_pkey( struct ib_device* ibdev,
                              u32               port_num,
                              u16               index,
                              u16*              pkey ) {
-  struct frdma_dev* dev = to_fdev( ibdev );
-  int               err;
+  // struct frdma_dev* dev = to_fdev( ibdev );
+  int err;
 
   if ( index != 0 ) {
     err = -EINVAL;
@@ -113,76 +105,6 @@ static int frdma_query_pkey( struct ib_device* ibdev,
 err_out:
   dev_err( &ibdev->dev, "returned err = %d\n", err );
   return err;
-}
-
-static int frdma_alloc_pd( struct ib_pd* ibpd, struct ib_udata* udata ) {
-  pr_err( "frdma_alloc_pd called in %s at %d lines\n", __FILE__, __LINE__ );
-  struct frdma_dev* dev = to_fdev( ibpd->device );
-  return 0;
-}
-
-static int frdma_dealloc_pd( struct ib_pd* ibpd, struct ib_udata* udata ) {
-  return 0;
-}
-
-static int frdma_create_qp( struct ib_qp*           ibqp,
-                            struct ib_qp_init_attr* init,
-                            struct ib_udata*        udata ) {
-  return 0;
-}
-
-static int frdma_modify_qp( struct ib_qp* ibqp, struct ib_qp_attr* attr,
-                            int mask, struct ib_udata* udata ) {
-  return 0;
-}
-
-static int frdma_post_send( struct ib_qp*             ibqp,
-                            const struct ib_send_wr*  wr,
-                            const struct ib_send_wr** bad_wr ) {
-  return 0;
-}
-
-static int frdma_post_recv( struct ib_qp*             ibqp,
-                            const struct ib_recv_wr*  wr,
-                            const struct ib_recv_wr** bad_wr ) {
-  return 0;
-}
-
-static int frdma_create_cq( struct ib_cq*                 ibcq,
-                            const struct ib_cq_init_attr* attr,
-                            struct uverbs_attr_bundle*    attrs ) {
-  return 0;
-}
-
-static int frdma_destroy_cq( struct ib_cq* ibcq, struct ib_udata* udata ) {
-  return 0;
-}
-
-static int frdma_poll_cq( struct ib_cq* ibcq,
-                          int           num_entries,
-                          struct ib_wc* wc ) {
-  return 0;
-}
-
-static int frdma_req_notify_cq( struct ib_cq* ibcq, enum ib_cq_notify_flags flags ) {
-  return 0;
-}
-
-static struct ib_mr* frdma_get_dma_mr( struct ib_pd* ibpd, int access ) {
-  return NULL;
-}
-
-static struct ib_mr* frdma_reg_user_mr( struct ib_pd*    ibpd,
-                                        u64              start,
-                                        u64              length,
-                                        u64              iova,
-                                        int              access,
-                                        struct ib_udata* udata ) {
-  return 0;
-}
-
-static int frdma_dereg_mr( struct ib_mr* ibmr, struct ib_udata* udata ) {
-  return 0;
 }
 
 static int frdma_enable_driver( struct ib_device* ibdev ) {
@@ -202,14 +124,6 @@ static int frdma_enable_driver( struct ib_device* ibdev ) {
   return 0;
 }
 
-static void frdma_dealloc( struct ib_device* ib_dev ) {
-  dev_err( &ib_dev->dev, "register uverbs error!" );
-}
-
-static int frdma_destroy_qp( struct ib_qp* ibqp, struct ib_udata* udata ) {
-  return 0;
-}
-
 static int frdma_alloc_ucontext( struct ib_ucontext* ibuc, struct ib_udata* udata ) {
   pr_err( "frdma_alloc_pd called in %s at %d lines\n", __FILE__, __LINE__ );
   return 0;
@@ -225,22 +139,7 @@ const struct ib_device_ops frdma_device_ops = {
   .query_pkey         = frdma_query_pkey,
   .get_port_immutable = frdma_get_port_immutable,
   .alloc_ucontext     = frdma_alloc_ucontext,
-  .alloc_pd           = frdma_alloc_pd,
-  .dealloc_pd         = frdma_dealloc_pd,
-  .create_qp          = frdma_create_qp,
-  .modify_qp          = frdma_modify_qp,
-  .destroy_qp         = frdma_destroy_qp,
-  .post_send          = frdma_post_send,
-  .post_recv          = frdma_post_recv,
-  .create_cq          = frdma_create_cq,
-  .destroy_cq         = frdma_destroy_cq,
-  .poll_cq            = frdma_poll_cq,
-  .req_notify_cq      = frdma_req_notify_cq,
-  .get_dma_mr         = frdma_get_dma_mr,
-  .reg_user_mr        = frdma_reg_user_mr,
-  .dereg_mr           = frdma_dereg_mr,
   .enable_driver      = frdma_enable_driver,
-  // .dealloc_driver     = frdma_dealloc,
 };
 
 static struct frdma_dev* dev;
@@ -275,6 +174,7 @@ static void frdma_attr_init( struct frdma_dev* dev ) {
   dev->attrs.max_fast_reg_page_list_len = FRDMA_MAX_FMR_PAGE_LIST_LEN;
   dev->attrs.max_pkeys                  = FRDMA_MAX_PKEYS;
   dev->attrs.local_ca_ack_delay         = FRDMA_LOCAL_CA_ACK_DELAY;
+  dev->attrs.sys_image_guid             = 0x1111;
 }
 
 static void frdma_port_init( struct frdma_dev* dev ) {
@@ -302,6 +202,11 @@ static void frdma_port_init( struct frdma_dev* dev ) {
 static __init int frdma_init_module( void ) {
   printk( KERN_WARNING "frdma init module\n" );
   int ret = 0;
+  ret     = request_module( "ib_uverbs" );
+  if ( ret ) {
+    pr_err( "load ib_verbs module error, ret = %d\n", ret );
+    return ret;
+  }
 
   dev = ib_alloc_device( frdma_dev, ibdev );
   if ( !dev ) {
@@ -309,12 +214,15 @@ static __init int frdma_init_module( void ) {
     return -ENOMEM;
   }
 
-  dev->ibdev.node_type = RDMA_NODE_RNIC;
+  dev->ibdev.node_type = RDMA_NODE_IB_CA;
   memcpy( &dev->ibdev.node_desc, FRDMA_NODE_DESC, sizeof( FRDMA_NODE_DESC ) );
 
   dev->ibdev.phys_port_cnt    = 1;
-  dev->ibdev.num_comp_vectors = 1;
-  // dev->ibdev.local_dma_lkey   = 0;
+  dev->ibdev.num_comp_vectors = num_possible_cpus();
+  dev->ibdev.local_dma_lkey   = 0;
+  dev->ibdev.node_guid        = 0x1111;
+  dev->ibdev.uverbs_cmd_mask |= BIT_ULL( IB_USER_VERBS_CMD_POST_SEND ) |
+                                BIT_ULL( IB_USER_VERBS_CMD_REQ_NOTIFY_CQ );
 
   // ret = ib_device_set_netdev(&dev->ibdev, NULL, 1);
   // if (ret) {
