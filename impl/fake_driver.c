@@ -1,4 +1,3 @@
-#include "linux/dev_printk.h"
 #include "linux/init.h"
 #include "linux/kern_levels.h"
 #include "linux/printk.h"
@@ -116,6 +115,106 @@ err_out:
   return err;
 }
 
+static int frdma_alloc_pd( struct ib_pd* ibpd, struct ib_udata* udata ) {
+  pr_err( "frdma_alloc_pd called in %s at %d lines\n", __FILE__, __LINE__ );
+  struct frdma_dev* dev = to_fdev( ibpd->device );
+  return 0;
+}
+
+static int frdma_dealloc_pd( struct ib_pd* ibpd, struct ib_udata* udata ) {
+  return 0;
+}
+
+static int frdma_create_qp( struct ib_qp*           ibqp,
+                            struct ib_qp_init_attr* init,
+                            struct ib_udata*        udata ) {
+  return 0;
+}
+
+static int frdma_modify_qp( struct ib_qp* ibqp, struct ib_qp_attr* attr,
+                            int mask, struct ib_udata* udata ) {
+  return 0;
+}
+
+static int frdma_post_send( struct ib_qp*             ibqp,
+                            const struct ib_send_wr*  wr,
+                            const struct ib_send_wr** bad_wr ) {
+  return 0;
+}
+
+static int frdma_post_recv( struct ib_qp*             ibqp,
+                            const struct ib_recv_wr*  wr,
+                            const struct ib_recv_wr** bad_wr ) {
+  return 0;
+}
+
+static int frdma_create_cq( struct ib_cq*                 ibcq,
+                            const struct ib_cq_init_attr* attr,
+                            struct uverbs_attr_bundle*    attrs ) {
+  return 0;
+}
+
+static int frdma_destroy_cq( struct ib_cq* ibcq, struct ib_udata* udata ) {
+  return 0;
+}
+
+static int frdma_poll_cq( struct ib_cq* ibcq,
+                          int           num_entries,
+                          struct ib_wc* wc ) {
+  return 0;
+}
+
+static int frdma_req_notify_cq( struct ib_cq* ibcq, enum ib_cq_notify_flags flags ) {
+  return 0;
+}
+
+static struct ib_mr* frdma_get_dma_mr( struct ib_pd* ibpd, int access ) {
+  return NULL;
+}
+
+static struct ib_mr* frdma_reg_user_mr( struct ib_pd*    ibpd,
+                                        u64              start,
+                                        u64              length,
+                                        u64              iova,
+                                        int              access,
+                                        struct ib_udata* udata ) {
+  return 0;
+}
+
+static int frdma_dereg_mr( struct ib_mr* ibmr, struct ib_udata* udata ) {
+  return 0;
+}
+
+static int frdma_enable_driver( struct ib_device* ibdev ) {
+  dev_warn( &ibdev->dev, "entry enable_driver" );
+  dev_info( &ibdev->dev, "device->kverbs_provider is %s", ibdev->kverbs_provider ? "true" : "false" );
+  dev_info( &ibdev->dev, "device->type: %d\n", ibdev->type );
+
+  struct frdma_dev* dev = to_fdev( ibdev );
+  struct ib_event   ev;
+  dev->port.attr.state = IB_PORT_ACTIVE;
+
+  ev.device           = &dev->ibdev;
+  ev.element.port_num = 1;
+  ev.event            = IB_EVENT_PORT_ACTIVE;
+  ib_dispatch_event( &ev );
+
+  return 0;
+}
+
+static void frdma_dealloc( struct ib_device* ib_dev ) {
+  dev_err( &ib_dev->dev, "register uverbs error!" );
+}
+
+static int frdma_destroy_qp( struct ib_qp* ibqp, struct ib_udata* udata ) {
+  return 0;
+}
+
+static int frdma_alloc_ucontext( struct ib_ucontext* ibuc, struct ib_udata* udata ) {
+  pr_err( "frdma_alloc_pd called in %s at %d lines\n", __FILE__, __LINE__ );
+  return 0;
+}
+
 const struct ib_device_ops frdma_device_ops = {
   .owner          = THIS_MODULE,
   .driver_id      = 21,
@@ -125,6 +224,23 @@ const struct ib_device_ops frdma_device_ops = {
   .query_port         = frdma_query_port,
   .query_pkey         = frdma_query_pkey,
   .get_port_immutable = frdma_get_port_immutable,
+  .alloc_ucontext     = frdma_alloc_ucontext,
+  .alloc_pd           = frdma_alloc_pd,
+  .dealloc_pd         = frdma_dealloc_pd,
+  .create_qp          = frdma_create_qp,
+  .modify_qp          = frdma_modify_qp,
+  .destroy_qp         = frdma_destroy_qp,
+  .post_send          = frdma_post_send,
+  .post_recv          = frdma_post_recv,
+  .create_cq          = frdma_create_cq,
+  .destroy_cq         = frdma_destroy_cq,
+  .poll_cq            = frdma_poll_cq,
+  .req_notify_cq      = frdma_req_notify_cq,
+  .get_dma_mr         = frdma_get_dma_mr,
+  .reg_user_mr        = frdma_reg_user_mr,
+  .dereg_mr           = frdma_dereg_mr,
+  .enable_driver      = frdma_enable_driver,
+  // .dealloc_driver     = frdma_dealloc,
 };
 
 static struct frdma_dev* dev;
