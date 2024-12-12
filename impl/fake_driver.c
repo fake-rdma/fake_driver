@@ -131,8 +131,8 @@ static int frdma_alloc_ucontext( struct ib_ucontext* ibuc, struct ib_udata* udat
 
 const struct ib_device_ops frdma_device_ops = {
   .owner          = THIS_MODULE,
-  .driver_id      = 21,
-  .uverbs_abi_ver = 1,
+  .driver_id      = RDMA_DRIVER_RXE,//! must be registered in kernel, or maybe in rdma-core provider?
+  .uverbs_abi_ver = 2,              //! This depends on the abi of driver_id
 
   .query_device       = frdma_query_device,
   .query_port         = frdma_query_port,
@@ -174,7 +174,7 @@ static void frdma_attr_init( struct frdma_dev* dev ) {
   dev->attrs.max_fast_reg_page_list_len = FRDMA_MAX_FMR_PAGE_LIST_LEN;
   dev->attrs.max_pkeys                  = FRDMA_MAX_PKEYS;
   dev->attrs.local_ca_ack_delay         = FRDMA_LOCAL_CA_ACK_DELAY;
-  dev->attrs.sys_image_guid             = 0x1111;
+  dev->attrs.sys_image_guid             = 0x66616b6572646d61;
 }
 
 static void frdma_port_init( struct frdma_dev* dev ) {
@@ -214,13 +214,14 @@ static __init int frdma_init_module( void ) {
     return -ENOMEM;
   }
 
-  dev->ibdev.node_type = RDMA_NODE_IB_CA;
+  dev->ibdev.node_type = RDMA_NODE_RNIC;
   memcpy( &dev->ibdev.node_desc, FRDMA_NODE_DESC, sizeof( FRDMA_NODE_DESC ) );
 
   dev->ibdev.phys_port_cnt    = 1;
   dev->ibdev.num_comp_vectors = num_possible_cpus();
   dev->ibdev.local_dma_lkey   = 0;
-  dev->ibdev.node_guid        = 0x1111;
+  dev->ibdev.node_guid        = 0x66616b6572646d61;
+
   dev->ibdev.uverbs_cmd_mask |= BIT_ULL( IB_USER_VERBS_CMD_POST_SEND ) |
                                 BIT_ULL( IB_USER_VERBS_CMD_REQ_NOTIFY_CQ );
 
